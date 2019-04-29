@@ -50,10 +50,10 @@ prs <- function(de, all, pwys, nperm=1000)
     }    
 
     de <- abs(de) #yes?    
-    perms <- .preparePerms(de, all, nperm, method = "PRS")
+    perms <- .preparePerms(de, all, nperm=nperm, method = "PRS")
     pwys <- .preparePathways(pwys, method="PRS", genes=all)
     res <- vapply(pwys, 
-                    function(p) .PRSSingle(p, de, all, perms),
+                    function(p) .PRSSingle2(p[[1]], de, all, perms),
                     numeric(2))
     
     res <- data.frame(t(res))
@@ -76,12 +76,12 @@ prsWeights <- function(pwy, de, all)
     }
 
     if(is(pwy, "Pathway")) 
-        pwy <- .preparePathways(list(pwy), method="PRS", genes=all)[[1]]
+        pwy <- .preparePathways(list(pwy), method="PRS", genes=all)[[1]][[1]]
 
     g <- intersect(all, rownames(pwy))
     glen <- length(g)
 
-    if(!glen) stop("Pathway does not contain any measured genes")
+    if(!glen) stop(paste("Gene names in a pathway and in data don't match"))
     set <- pwy[g, g]
     
     wei <- setNames(rep(0, glen), g)
@@ -94,45 +94,45 @@ prsWeights <- function(pwy, de, all)
     return(wei)
 }
 
-.PRSSingle <- function(pwy, de, all, perms) 
+
+.PRSSingle2 <- function(pwy, de, all, perms) 
 {
-    weight <- prsWeights(pwy, de, all)
-    
-    g <- intersect(all, rownames(pwy))
-    glen <- length(g)
-    set <- pwy[g, g]
-    indde <- g %in% names(de)
-
-    nf <- sum(indde) / glen
-    expr <- rep(1, glen)
-    expr[indde] <- de[g[indde]] 
-    
-    obs <- sum(expr * weight) * nf
-    
-    # random
-    permsub <- perms[g, , drop = FALSE]
-    
-    weight.rn <- apply(permsub, 2, function(x)
-    {
-        weight <- setNames(rep(0, glen), g)
-        if (glen && length(g[x != 0]))
-        { 
-            lind <- g[x != 0]
-            weight[lind] <- 1 + downstreamCpp(set, g, lind)        
-            weight[x == 0] <- 0
-        }
-        return(weight)
-    })
-    
-    nf.rn <- colSums(permsub != 0)
-    rand <- colSums(weight.rn * permsub) * (nf.rn / glen)
-    
-    # normalization
-    obs <- (obs - mean(rand)) / sd(rand)
-    rand <- (rand - mean(rand)) / sd(rand)
-    p.value <- (sum(rand >= obs) + 1) / (length(rand) + 1)
-    res <- c(nPRS = obs, p.value = p.value)
-    return(res)
+  weight <- prsWeights(pwy, de, all)
+  
+  g <- intersect(all, rownames(pwy))
+  glen <- length(g)
+  set <- pwy[g, g]
+  indde <- g %in% names(de)
+  
+  nf <- sum(indde) / glen
+  expr <- rep(1, glen)
+  expr[indde] <- de[g[indde]] 
+  
+  obs <- sum(expr * weight) * nf
+  
+  # random
+  permsub <- perms[g, , drop = FALSE]
+  
+  weight.rn <- apply(permsub, 2, function(x)
+  {
+    weight <- setNames(rep(0, glen), g)
+    if (glen && length(g[x != 0]))
+    { 
+      lind <- g[x != 0]
+      weight[lind] <- 1 + downstreamCpp(set, g, lind)        
+      weight[x == 0] <- 0
+    }
+    return(weight)
+  })
+  
+  nf.rn <- colSums(permsub != 0)
+  rand <- colSums(weight.rn * permsub) * (nf.rn / glen)
+  
+  # normalization
+  obs <- (obs - mean(rand)) / sd(rand)
+  rand <- (rand - mean(rand)) / sd(rand)
+  p.value <- (sum(rand >= obs) + 1) / (length(rand) + 1)
+  res <- c(nPRS = obs, p.value = p.value)
+  return(res)
 }
-
 

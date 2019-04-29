@@ -3,7 +3,6 @@
 \name{prs}
 \alias{prs}
 \alias{prsWeights}
-\alias{prsWeights}
 \title{Pathway regulation score (PRS)}
 \usage{
 prs(de, all, pwys, nperm = 1000)

@@ -1,9 +1,9 @@
 Package: ToPASeq
-Version: 1.17.1
-Date: 2018-04-14
+Version: 1.17.3
+Date: 2019-03-19
 Title: Topology-based pathway analysis of RNA-seq data
 Author: Ivana Ihnatova, Eva Budinska, Ludwig Geistlinger
-Maintainer: Ludwig Geistlinger <ludwig.geistlinger@sph.cuny.edu>
+Maintainer: Ivana Ihnatova <ihnatova@iba.muni.cz>
 Description: Implementation of methods for topology-based pathway analysis of 
     RNA-seq data. This includes Topological Analysis of Pathway Phenotype 
     Association (TAPPA; Gao and Wang, 2007), PathWay Enrichment Analysis (PWEA; 
@@ -15,13 +15,15 @@ Depends:
 Imports:
     Rcpp,
     graph,
-    methods 
+    methods, 
+    Biobase, RBGL, SummarizedExperiment, clipper,gRbase, qpgraph, rrcov,  limma
 Suggests: 
     BiocStyle,
-    EnrichmentBrowser, 
     airway,  
     knitr,
-    rmarkdown
+    rmarkdown,
+    DESeq2, DESeq, edgeR, plotrix,
+    breastCancerVDX, EnrichmentBrowser
 LinkingTo: Rcpp
 LazyData: yes
 License: AGPL-3
@@ -34,4 +36,5 @@ biocViews: ImmunoOncology,
     NetworkEnrichment, 
     Visualization
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
+Encoding: UTF-8

@@ -29,6 +29,7 @@ suppressPackageStartupMessages({
     library(ToPASeq)
     library(EnrichmentBrowser)
     library(graphite)
+    library(BiocStyle)
 })
 ```
 
@@ -180,7 +181,7 @@ head(res)
 Corresponding gene weights (number of downstream DE genes) can be obtained for a
 pathway of choice via
 ```{r prsWeights}
-ind <- grep("Ras signaling pathway", names(pwys))
+ind <- grep("ErbB signaling pathway", names(pwys))
 weights <- prsWeights(pwys[[ind]], de, all)
 weights
 ```
