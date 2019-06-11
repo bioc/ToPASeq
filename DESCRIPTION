@@ -1,5 +1,5 @@
 Package: ToPASeq
-Version: 1.19.0
+Version: 1.19.1
 Date: 2019-03-19
 Title: Topology-based pathway analysis of RNA-seq data
 Author: Ivana Ihnatova, Eva Budinska, Ludwig Geistlinger
@@ -16,7 +16,7 @@ Imports:
     Rcpp,
     graph,
     methods, 
-    Biobase, RBGL, SummarizedExperiment, clipper,gRbase, qpgraph, rrcov,  limma
+    Biobase, RBGL, SummarizedExperiment, gRbase,  limma, corpcor
 Suggests: 
     BiocStyle,
     airway,  
