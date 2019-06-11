@@ -1,0 +1,213 @@
+---
+title: "Topology-based pathway analysis of microarray and RNA-seq data"
+author:
+    - name: Ivana Ihnatova
+      affiliation: Institute of Biostatistics and Analyses, 
+                   Masarykova University Brno
+      email: ihnatova@iba.muni.cz
+    - name: Eva Budinska
+      affiliation: 
+      
+package: ToPASeq
+abstract: > 
+    The _ToPASeq_ package implements methods for topology-based pathway analysis
+    of RNA-seq data. This includes Topological Analysis of Pathway Phenotype 
+    Association (TAPPA; Gao and Wang, 2007), PathWay Enrichment Analysis (PWEA; 
+    Hung et al., 2010), Pathway Regulation Score (PRS; Ibrahim et al., 
+    2012). clipper (Martini et al., 2012), Signaling Pathway Impact Analysis (SPIA; Tarca et al., 2009),
+    DEGraph (Jacob et al., 2010) and TopologyGSA (Massa et al., 2010). 
+    
+    This work was supported by the project INBIOR (CZ.1.07/2.3.00/20.0042) co-financed by the European Social Fund and the state budget of the Czech Republic.
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  % \VignetteIndexEntry{Topology-based pathway analysis of RNA-seq data}
+  % \VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, echo=FALSE}
+suppressPackageStartupMessages({ 
+    library(ToPASeq)
+    library(graphite)
+})
+```
+# Introduction 
+
+This package de-novo implements or adjusts the existing implementations of several different methods for topology-based pathway analysis of gene expression data from microarray and RNA-Seq technologies.
+
+Traditionally, in pathway analysis differentially expressed genes are mapped to reference pathways derived from databases and relative enrichment is assessed.  Methods of topology-based pathway analysis are the last generation of pathway analysis methods that take into account the topological structure of a pathway, which helps to increase specificity and sensitivity of the results.
+
+This package implements eight topology-based pathway analysis methods that focus on identification of the pathways that are differentially affected between two condition. Each method is implemented as a single wrapper function which allows the user to call a method in a single command.
+
+# Setup
+
+We start by loading the package.
+
+```{r lib}
+library(ToPASeq)
+```
+
+# Preparing the data
+
+The input data are either normalized (count) data or gene expression data as well as pathway topological structure. 
+
+For the sake of simplicity, our package offers in each wrapper function a pre-processing step for RNA-seq normalization as implemented in edgeR and DESeq packages. If necessary, the functions also performs differential gene expression analysis through calling limma and DESeq2 packages. Additionally, the user can prepare the data by his preffered method and skip the built-in normalization and/or differential expression analysis.  
+
+
+Pathways and their topological structures are an important input for the analysis. They are represented as graphs $G=(V,E)$, where $V$ denotes a set of vertices or nodes represented by genes and $E \subseteq V \times V$ is a set of edges between nodes (oriented or not, depending on the method) representing the interaction between genes. These structures can be downloaded from public databases such as KEGG or Biocarta or are available through other packages such as `r Biocpkg("graphite")`.
+
+ToPASeq is build upon `r Biocpkg("graphite")` R-package were patways for multiple species and from multiple database can be obtained. In these pathways, protein complexes are expanded into cliques since it is assumed that all units from one complex interact with each other. A clique, from graph theory, is a subset of vertices such that every two vertices in the subset are connected by an edge. On the other hand, gene families are expanded into separate nodes with same incoming and/or outgoing edges, because they are believed to be interchangable. Additionaly, proteins and metabolites are differentiated in the pathway. Interactions between proteins are propagated through metabolites and viceversa. 
+
+```{r}
+pathways<-pathways("hsapiens", "kegg")[1:5]
+pathways[[1]]
+str(pathways[[1]])
+```
+
+# Analysis of RNA-Seq data
+
+For RNA-seq data, we consider transcriptome profiles of four primary human
+airway smooth muscle cell lines in two conditions: control and treatment with
+dexamethasone
+[Himes et al., 2014](https://doi.org/10.1371/journal.pone.0099625).
+
+We load the `r Biocpkg("airway")` dataset 
+
+```{r loadAirway}
+library(airway)
+data(airway)
+```
+
+For further analysis, we only keep genes that are annotated to an ENSEMBL gene ID. 
+```{r processAirway}
+airSE <- airway[grep("^ENSG", rownames(airway)),]
+dim(airSE)
+assay(airSE)[1:4,1:4]
+```                     
+
+We define the grouping variable
+
+```{r}
+group <- ifelse(airway$dex == "trt", 1, 0)
+table(group)
+```
+
+Here, we retrieve human KEGG pathways.  
+
+```{r pwys}
+library(graphite)
+pwys <- pathways(species="hsapiens", database="kegg")[1:5]
+pwys
+```
+
+As the airway dataset uses ENSEMBL gene IDs, but the nodes of the pathways are 
+based on NCBI Entrez Gene IDs,
+
+```{r nodes}
+nodes(pwys[[1]])
+```
+
+we first map the gene IDs in the pathways from ENTREZ IDs to ENSEMBL. 
+
+```{r mapIDs}
+pwys<-graphite::convertIdentifiers(pwys,"ENSEMBL")
+nodes(pwys[[1]])
+```
+
+The methods described below can be applied on microarry data by setting argument `type` to `"MA"`. All methods include also differential expression analysis which is perfomed by `r Biocpkg("limma")` package. For RNA-Seq data, voom transformation is applied first and the user can change the method with arguments `norm.method` and `test.method`.
+
+  
+## TopologyGSA
+TopologyGSA represents a multivariable method in which the expression of genes is modelled with Gausian Graphical Models with covariance matrix reflecting the pathway topology. It uses the the Iterative Proportional Scaling algorithm to estimate the covariance matrices. The vectors of means are compared by Hotelling's T2 test. The method has requirements on the minimal number of samples for each pathway. This method was first implemented in the `r Biocpkg("TopologyGSA")` package. In here, we have optimalized its performance by using different function for obtaining cliques from each pathway.
+
+The method can be used with a single command 
+ 
+```{r TopologyGSA}
+top<-TopologyGSA(assay(airSE), group, pwys, type="RNASeq", perms=10)
+res(top)
+```
+
+Apart from the expected arguments: a gene expression data matrix, a vector of class labels and a list of pathways, the user needs to specify the `type` argument which decides on the type of the data (`"RNASeq"` for RNA-Seq data).  The others arguments are optional. The `perms` argument sets the number of permutations to be used in the statistical tests. By default both mean and variance tests are run, this can be changed to only variance test by setting `method="var"`. Arguments `convertTo` and `convertBy` control the conversion of the node labels in the pathways. The default setting is `convertTo="none"` which performs no conversion. Please note, that the node labels should be the same as the rownames of gene expression data matrix. The threshold for variance test is specified with `alpha` argument. The implementation allows also testing of all the cliques present in the graph by setting `testCliques=TRUE`. Please note that these tests may take quite a long time. The implementation returns also a gene-level statistics of the differential expression of genes performed via 'limma' package. 
+
+## DEGraph
+Another multivariable method implemented in the package is `r Biocpkg("DEGraph")`. This method assumes the same direction in the differential expresion of genes belonging to a pathway. It performs the regular Hotelling's T2 test in the graph-Fourier space restricted to its first $k$ components which is more powerful than test in the full graph-Fourier space or in the original space.
+
+We apply the method with 
+
+```{r DEGraph}
+deg<-DEGraph(assay(airSE), group, pwys, type="RNASeq")
+res(deg)
+```
+
+Apart from the expected arguments: a gene expression data matrix, a vector of class labels and a list of pathways, the user needs to specify the `type` argument which decides on the type of the data (`"RNASeq"` for RNA-Seq data).  The others arguments are optional.  Arguments `convertTo` and `convertBy` control the conversion of the node labels in the pathways. The default setting is `convertTo="none"` which performs no conversion. Please note, that the node labels should be the same as the rownames of gene expression data matrix.  Since, the DEGraph method runs a statistical test for each connected component of a pathway, a method for assigning a global p-value for whole pathway is needed. The user can select from three approaches: the minimum, the mean and the p-value of the biggest component. This is specified via `overall` argument. The implementation returns also a gene-level statistics of the differential expression of genes performed via `limma package. 
+
+## clipper
+The last multivariable method available within this package is called clipper. This method is similar to the topologyGSA as it uses the same two-step approach. However, the Iterative Proportional Scaling algorithm was subsituted with a shrinkage procedure of James-Stein-type which additionally allows proper estimates also in the situation when number of samples is smaller than the number of genes in a pathway. The tests on a pathway-level are follwed with a search for the most affected path in the graph. 
+
+The method can be applied with 
+
+```{r clipper}
+cli<-clipper(assay(airSE), group, pathways,type="RNASeq", method="mean")
+res(cli)$results[[1]]
+```
+
+Apart from the expected arguments: a gene expression data matrix, a vector of class labels and a list of pathways, the user needs to specify the `type` argument which decides on the type of the data (`"RNASeq"` for RNA-Seq data).  The others arguments are optional. Arguments `convertTo` and `convertBy` control the conversion of the node labels in the pathways. The default setting is `convertTo="none"` which performs no conversion. Please note, that the node labels should be the same as the rownames of gene expression data matrix. Also, both mean and variance tests are run, this can be changed to only variance test by setting `method="var"`. The `nperm` controls the number of permutations in the statistical tests. Similarly as in topologyGSA,  the implementation allows testing of all the cliques present in the graph by setting `testCliques=TRUE`. Please note that these tests may take quite a long time. The implementation returns also a gene-level statistics of the differential expression of genes performed via `limma` package. 
+
+The function returns two types of the results on pathway-level. The first (printed above), is a table of p-values and q-values related to the differential expression and concentration of the pathways. The second one, is a list contating the most affected paths in each pathway - these are obtained via `easyClip` function from `r Biocpkg("clipper")` package. 
+
+##
+
+## SPIA
+The most well-known topology-based pathway analysis method is SPIA. In there, two evidences of differential expression of a pathway are combined. The first evidence is a regular so called overrepresentation analysis in which the statistical significance of the number of differentially expressed genes belonging to a pathway is assessed. The second evidence reflects the pathway topology and it is called the pertubation factor. The authors assume that a differentially expressed gene at the begining of a pathway topology (e.g. a receptor in a signaling pathway) has a stronger effect on the functionality of a pathway than a differentially expressed gene at the end of a pathway (e.g. a transcription factor in a signaling pathway). The pertubation factors of all genes are calculated from a system of linear equations and then combined within a pathway. The two evidences in a form of p-values are finally combined into a global p-value, which is used to rank the pathways.
+
+```{r SPIA}
+spi<-SPIA(assay(airSE), group,pwys , type="RNASeq", logFC.th=-1)
+res(spi)
+```
+
+Apart from the expected arguments: a gene expression data matrix, a vector of class labels and a list of pathways, the user needs to specify the `type` argument which decides on the type of the data (`"RNASeq"` for RNA-Seq data). Alternatively, the user can supply the results of the differential expression analysis of genes instead of gene expression data matrix in two forms:
+
+1.  a data.frame with columns: **ID gene identifiers (they must match with the node labels), **logFC** log fold-changes, **t**  t-statistics, **pval** p-values, **padj** adjusted p-values.  Then the user sets `type` to `"DEtable"`
+2. a list with two slots: named vector of log fold-changes of differentially expressed genes and a vector of names of all genes analysed. Then the user sets `type` to `"DElist"`
+
+
+ The others arguments are optional. Arguments `convertTo` and `convertBy` control the conversion of the node labels in the pathways. The default setting is `convertTo="none"` which performs no conversion. Please note, that the node labels should be the same as the rownames of gene expression data matrix. The default thresholds for the differential expression analysis of genes are set with arguments `logFC.th` and `p.val.th`. The user can omit one of these criteria by setting the agrument negative value, as is shown also in the example. The implementation returns also a gene-level statistics of the differential expression of genes. These statistics are later used in the visualization of a selected pathway. 
+
+## TAPPA
+TAPPA was among the first topology-based pathway analysis methods. It was inspired in chemointformatics and their models for predicting the structure of molecules. In TAPPA, the gene expression values are standardized and sigma-transformed within a samples. Then, a pathway is seen a molecule, individual genes as atoms and the energy of a molecule is a score defined for one sample. This score is called Pathway Connectivity Index. The difference of expression is assessed via a common univariable two sample test - Mann-Whitney in our implemetation. 
+
+```{r TAPPA}
+tap<-TAPPA(assay(airSE), group, pwys, type="RNASeq")
+res(tap)
+```
+
+Apart from the expected arguments: a gene expression data matrix, a vector of class labels and a list of pathways, the user needs to specify the `type` argument which decides on the type of the data (`"RNASeq"` for RNA-Seq data).  The others arguments are optional.  Arguments `convertTo` and `convertBy` control the conversion of the node labels in the pathways. The default setting is `convertTo="none"` which performs no conversion. Please note, that the node labels should be the same as the rownames of gene expression data matrix. The user can also specified whether the normalization step (standardization and sigma-transformation) should be perfomed (`normalize=TRUE`). If `verbose=TRUE`, function prints out the titles of pathways as their are analysed. The implementation returns also a gene-level statistics of the differential expression of genes. 
+
+## PRS
+PRS is another method that works with gene-level statistics and a list of differentially expresed genes. The pathway topology is incorporated as the number of downstream differentially expressed genes. The gene-level log fold-changes are weigted by this number and sumed up into a pathway-level score. A statistical significance is assessed by a permutations of genes.  
+
+```{r PRS}
+Prs<-PRS( assay(airSE), group, pwys, type="RNASeq",  logFC.th=-1, nperm=10)
+res(Prs)
+```
+
+Arguments of this functions are almost the same as in `SPIA`. Apart from the expected arguments: a gene expression data matrix, a vector of class labels and a list of pathways, the user needs to specify the `type` argument which decides on the type of the data (`"RNASeq"` for RNA-Seq data). Alternatively,  the user can supply the results of the differential expression analysis of genes instead of gene expression data matrix in two forms:
+
+1. a data.frame with columns: **ID** gene identifiers (they must match with the node labels), **logFC** log fold-changes, **t** t-statistics, **pval** p-values, **padj** adjusted p-values.  Then the user sets `type` to `"DEtable"`
+2. a list with two slots: named vector of log fold-changes of differentially expressed genes and a vector of names of all genes analysed. Then the user sets `type` to `"DElist"`
+
+The others arguments are optional. Arguments `convertTo` and `convertBy` control the conversion of the node labels in the pathways. The default setting is `convertTo="none"` which performs no conversion. Please note, that the node labels should be the same as the rownames of gene expression data matrix.  The default thresholds for the differential expression analysis of genes  are set with arguments `logFC.th` and `p.val.th`. The user can omit one of these criteria by setting the agrument negative value, as is shown also in the example. The implementation returns also a gene-level statistics of the differential expression of genes.  There is one extra argument `nperm` which controls the number of permutations. 
+
+
+\section{PWEA}
+The last method available in this package is called PathWay Enrichment Analysis (PWEA). This is actually a weigthed form of common Gene Set Enrichment Analysis (GSEA). The weights are called Topological Influence Factor (TIF) and are defined as a geometic mean of ratios of Pearson's correlation coefficient and the distance of two genes in a pathway. The weights of genes outside a pathway are assigned randomly from normal distribution with parameters estimated from the weights of genes in all pathways. A statistical significance of a pathway is assessed via Kolmogorov-Simirnov-like test statistic comparing two cumulative distribution functions with class label permutations. 
+
+```{r PWEA}
+pwe<-PWEA(assay(airSE), group, pwys,  type="RNASeq", nperm=10)
+res(pwe)
+```
+
+Apart from the expected arguments: a gene expression data matrix, a vector of class labels and a list of pathways, the user needs to specify the `type` argument which decides on the type of the data (`"RNASeq"` for RNA-Seq data). Alternatively, instead of gene expression data matrix the user can supply a list of observed and random gene-level statistics and set `type` to `"DEtable"`. The observed gene-level statistics are expected as data frame with columns: **ID** gene identifiers (they must match with the node labels), **logFC** log fold-changes, **t**  t-statistics, **pval p-values, **padj** adjusted p-values.. A data.frame of similar data.frames is expected for random statistics (it is an output from sapply function when the applied function returns a data frame). Columns should refer to the results from individual analyses after class label permutation. The others arguments are optional.Arguments `convertTo` and `convertBy` control the conversion of the node labels in the pathways. The default setting is `convertTo="none"` which performs no conversion.  Please note, that the node labels should be the same as the rownames of gene expression data matrix. The `alpha` parameter sets a threshold for gene weights. The purpose of this filtering is to reduce the possiblity that a weight of a gene that is tighly correlated with a few genes are lowered by the weak correlation with other genes in a pathway. The implementation returns also a gene-level statistics of the differential expression of genes. The `nperm`  argument controls the number of permutations. 
+
