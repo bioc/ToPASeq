@@ -125,7 +125,7 @@ TopologyGSA represents a multivariable method in which the expression of genes i
 The method can be used with a single command 
  
 ```{r TopologyGSA}
-top<-TopologyGSA(assay(airSE), group, pwys, type="RNASeq", perms=10)
+top<-TopologyGSA(assay(airSE), group, pwys, type="RNASeq", nperm=10)
 res(top)
 ```
 
