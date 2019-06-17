@@ -149,7 +149,7 @@ The last multivariable method available within this package is called clipper. T
 The method can be applied with 
 
 ```{r clipper}
-cli<-clipper(assay(airSE), group, pathways,type="RNASeq", method="mean")
+cli<-clipper(assay(airSE), group, pwys,type="RNASeq", method="mean")
 res(cli)$results[[1]]
 ```
 
