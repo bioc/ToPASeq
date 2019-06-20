@@ -1,5 +1,5 @@
 ---
-title: "Topology-based pathway analysis of microarray and RNA-seq data"
+title: "Eight methods for topology-based pathway analysis of microarray and RNA-seq data"
 author:
     - name: Ivana Ihnatova
       affiliation: Institute of Biostatistics and Analyses, 
