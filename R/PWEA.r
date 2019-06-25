@@ -44,7 +44,7 @@
 PWEA<-function(x, group, pathways, type, which="proteins", edgeType=NULL, preparePaths=TRUE, norm.method=NULL, test.method=NULL, tif=NULL, alpha=0.05, nperm=1000,  ncores=1,
                both.directions=TRUE, maxNodes=150, minEdges=0, commonTh=2, filterSPIA=FALSE, convertTo="none", convertBy=NULL){
   gedm<-.prepareData(x, group, type, method="PWEA", norm.method, test.method, nperm, ncores)
-  if (preparePaths) paths<-.preparePathways(pathways, method="PWEA", both.directions, rownames(gedm[[1]]), which=which, edgeType=edgeType,maxNodes, minEdges, commonTh, filterSPIA, convertTo, convertBy ) else paths<-pathways
+  if (preparePaths) paths<-.preparePathways(pathways, method="PWEA", both.directions, gedm[[1]]$ID, which=which, edgeType=edgeType,maxNodes, minEdges, commonTh, filterSPIA, convertTo, convertBy ) else paths<-pathways
   if (is.null(tif) & type=="DEtable") stop("Argument 'tif' is missing. Calculate TIF with prepareTIF() first.")
   if (is.null(tif)) tif<-.prepareTIF(paths, x, alpha)
   res<-.pwea(gedm[[1]], gedm[[2]], tif, paths, alpha)

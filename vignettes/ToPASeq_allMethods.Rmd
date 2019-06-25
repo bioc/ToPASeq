@@ -189,7 +189,7 @@ Apart from the expected arguments: a gene expression data matrix, a vector of cl
 PRS is another method that works with gene-level statistics and a list of differentially expresed genes. The pathway topology is incorporated as the number of downstream differentially expressed genes. The gene-level log fold-changes are weigted by this number and sumed up into a pathway-level score. A statistical significance is assessed by a permutations of genes.  
 
 ```{r PRS}
-Prs<-PRS( assay(airSE), group, pwys, type="RNASeq",  logFC.th=-1, nperm=10)
+Prs<-PRS_wrapper( assay(airSE), group, pwys, type="RNASeq",  logFC.th=-1, nperm=10)
 res(Prs)
 ```
 
