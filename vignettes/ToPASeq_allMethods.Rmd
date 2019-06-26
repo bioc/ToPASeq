@@ -23,7 +23,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  % \VignetteIndexEntry{Topology-based pathway analysis of RNA-seq data}
+  % \VignetteIndexEntry{Eight methods for topology-based pathway analysis of RNA-seq data}
   % \VignetteEngine{knitr::rmarkdown}
 ---
 
