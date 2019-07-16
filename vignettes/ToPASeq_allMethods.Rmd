@@ -60,12 +60,6 @@ Pathways and their topological structures are an important input for the analysi
 
 ToPASeq is build upon `r Biocpkg("graphite")` R-package were patways for multiple species and from multiple database can be obtained. In these pathways, protein complexes are expanded into cliques since it is assumed that all units from one complex interact with each other. A clique, from graph theory, is a subset of vertices such that every two vertices in the subset are connected by an edge. On the other hand, gene families are expanded into separate nodes with same incoming and/or outgoing edges, because they are believed to be interchangable. Additionaly, proteins and metabolites are differentiated in the pathway. Interactions between proteins are propagated through metabolites and viceversa. 
 
-```{r}
-pathways<-pathways("hsapiens", "kegg")[1:5]
-pathways[[1]]
-str(pathways[[1]])
-```
-
 # Analysis of RNA-Seq data
 
 For RNA-seq data, we consider transcriptome profiles of four primary human
@@ -86,6 +80,15 @@ airSE <- airway[grep("^ENSG", rownames(airway)),]
 dim(airSE)
 assay(airSE)[1:4,1:4]
 ```                     
+
+We also remove genes with zero counts. 
+
+```{r remove zeros}
+airSE <- airway[rowSums(assay(airSE))>0,]
+dim(airSE)
+assay(airSE)[1:4,1:4]
+```                     
+
 
 We define the grouping variable
 
@@ -149,7 +152,7 @@ The last multivariable method available within this package is called clipper. T
 The method can be applied with 
 
 ```{r clipper}
-cli<-clipper(assay(airSE), group, pwys,type="RNASeq", method="mean")
+cli<-clipper(assay(airSE), group, pwys,type="RNASeq", method="mean", nperm=10)
 res(cli)$results[[1]]
 ```
 
@@ -157,7 +160,7 @@ Apart from the expected arguments: a gene expression data matrix, a vector of cl
 
 The function returns two types of the results on pathway-level. The first (printed above), is a table of p-values and q-values related to the differential expression and concentration of the pathways. The second one, is a list contating the most affected paths in each pathway - these are obtained via `easyClip` function from `r Biocpkg("clipper")` package. 
 
-##
+
 
 ## SPIA
 The most well-known topology-based pathway analysis method is SPIA. In there, two evidences of differential expression of a pathway are combined. The first evidence is a regular so called overrepresentation analysis in which the statistical significance of the number of differentially expressed genes belonging to a pathway is assessed. The second evidence reflects the pathway topology and it is called the pertubation factor. The authors assume that a differentially expressed gene at the begining of a pathway topology (e.g. a receptor in a signaling pathway) has a stronger effect on the functionality of a pathway than a differentially expressed gene at the end of a pathway (e.g. a transcription factor in a signaling pathway). The pertubation factors of all genes are calculated from a system of linear equations and then combined within a pathway. The two evidences in a form of p-values are finally combined into a global p-value, which is used to rank the pathways.

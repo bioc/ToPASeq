@@ -59,33 +59,33 @@
 
   if (nperm == 0) {
     if (paired) {
-      t.obs<-.hote_mean_paired(x1,x2, cov$s)
+      t.obs<-.hote_mean_paired(x1,x2, cov$s)$t.obs
       pval <- 1 - pf(t.obs$t.obs, ncol(x), nrow(x1) - ncol(x))
     } else {
-      t.obs<- .hote_mean(x1,x2, cov$s)
+      t.obs<- .hote_mean(x1,x2, cov$s)$t.obs
       pval <- 1 - pf(t.obs$t.obs, ncol(x), nrow(x1) + nrow(x2) - ncol(x) - 1)
     }
   } else {
     if (paired) {
-      t.obs<-.hote_mean_paired(x1,x2, cov$s)
+      t.obs<-.hote_mean_paired(x1,x2, cov$s)$t.obs
       stat.perm<-vapply(seq_len(nperm), function(i) {
         x2perm<-x2[sample(NROW(x2)),, drop=FALSE]
         cov<-.estimateCov(x1-x2perm, type=type, equal=equal)
         cov<-.graphCov(cov,cliques)
-        .hote_mean_paired(x1,x2perm, cov$s)
+        .hote_mean_paired(x1,x2perm, cov$s)$t.obs
       }, numeric(1))
     } else {
-      t.obs<- .hote_mean(x1,x2, cov$s)
+      t.obs<- .hote_mean(x1,x2, cov$s)$t.obs
       stat.perm<-vapply(seq_len(nperm), function(i) {
         rgroup <- sample(group)
         x1perm <- x[rgroup==1, , drop=FALSE]
         x2perm <- x[rgroup==2, , drop=FALSE]
         cov<-.estimateCov(x1perm, x2perm, type, equal)
         cov<-.graphCov(cov,cliques)
-        .hote_mean(x1perm, x2perm, cov$s )  
+        .hote_mean(x1perm, x2perm, cov$s )$t.obs  
       }, numeric(1))
     }
-    pval <- sum(stat.perm >= t.obs)/nperm
+    pval <- sum(stat.perm >= t.obs, na.rm=TRUE)/nperm
   }
   out<-list(pval = pval, t.obs = t.obs)
 }
@@ -252,7 +252,7 @@
       x2perm <- x[rgroup==2, , drop=FALSE]
       cov<-.estimateCov(x1perm, x2perm, type, TRUE)
       cov<-.graphCov(cov, cliques)
-      .varianceTest(cov, n1, n2, ngene, nedge )$lambda  
+      return(.varianceTest(cov, n1, n2, ngene, nedge )$lambda  )
       
     }, numeric(1))
     pval <- mean(stat.perm >= obs$lambda, na.rm=TRUE) #some stat.perm can be NA
@@ -267,7 +267,7 @@
 
 # equal TRUE ak pathwayVarianceTest nevyznamny, FALSE ak vyznamny
 .pathwayMeanTest<-function(x, group, graph, nperm, shrink, equal, paired){
-  D<-.finalizeData(x,group, graph, FALSE)
+  D<-.finalizeData(x,group, graph, FALSE, shrink)
   
   x1<-D$x1
   x2<-D$x2

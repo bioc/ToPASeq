@@ -100,6 +100,7 @@ SPIA<-function(x, group, pathways, type,  which="proteins", edgeType=NULL,prepar
 
  ph <- pb <- pcomb <- nGP <- pSize <- smPFS <- tA <- tAraw <- NULL
 
+ rownames(M)<-colnames(M)<-sapply(rownames(M), function(x) substr(x, regexpr(":",x)+1, nchar(x)))
 diag(M) <- diag(M) - 1
 X <- de[rownames(M)]
 noMy <- sum(!is.na(X))

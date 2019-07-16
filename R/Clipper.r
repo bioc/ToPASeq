@@ -65,6 +65,7 @@ clipper<-function(x, group, pathways, type,which="proteins", edgeType=NULL, prep
 message("Analysing pathway:\n")
       out<-.catchErr(pathways, function(p) {
       cat(p[[2]],"\n")
+        expr<-expr[rownames(expr) %in% nodes(p[[1]]),]  
        if (method=="mean") {
          pvar<-.pathwayVarianceTest(t(expr), classes, p[[1]], nperms, "decide")
          .pathwayMeanTest(t(expr), classes, p[[1]], nperms, "decide", pvar$pval<=alphaV, paired=FALSE)
