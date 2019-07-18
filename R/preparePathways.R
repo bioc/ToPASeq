@@ -25,7 +25,6 @@
     if (!is.null(minEdges)) pwys <- .fewEdges(pwys, minEdges)
     if (!is.null(commonTh)) pwys <- .commonGenes(pwys, which, genes, commonTh)
 
-
     pwys <- lapply(pwys, function(p)
       list(.transformPathway(p, method=method, which=which, edgeType=edgeType,
                              both.directions, EdgeAttrs=EdgeAttrs), p@title))

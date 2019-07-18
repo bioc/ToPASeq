@@ -40,7 +40,6 @@
 DEGraph<-function(x, group, pathways, type, which="proteins", edgeType=NULL,preparePaths=TRUE, norm.method=NULL, test.method=NULL, overall="biggest", useInteractionSigns=TRUE, EdgeAttrs=NULL,
                   both.directions=TRUE, maxNodes=150, minEdges=0, commonTh=2, filterSPIA=FALSE, convertTo="none", convertBy=NULL){
   gedm<-.prepareData(x, group, type, method="DEGraph", norm.method)
-  gedm<<-gedm
   if (preparePaths) {
     if (useInteractionSigns) {
       paths<-.preparePathways(pathways, method="DEGraph", both.directions,rownames(gedm[[1]]), which=which, edgeType=edgeType,maxNodes, minEdges, commonTh, filterSPIA, convertTo, convertBy, EdgeAttrs)
@@ -97,10 +96,10 @@ return(out)
 out<-.catchErr(pathways, function(p) {
 testOneGraph(p[[1]], exprs, group, useInteractionSigns = FALSE)
 })
-out<<-out
+
 if (length(out[[1]])==0) stop("No pathway was sucessfully tested")
 
-out<<-out
+
 out[[1]]<-.processDEGraph(out[[1]], overall)
 out[[1]][[1]]$Overall.q.value<-p.adjust(out[[1]][[1]][,"Overall.p"],"fdr")
 out[[1]][[1]]<-out[[1]][[1]][,c(1, ncol(out[[1]][[1]]), 2:(ncol(out[[1]][[1]])-1))]

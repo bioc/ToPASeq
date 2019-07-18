@@ -60,10 +60,10 @@
   if (nperm == 0) {
     if (paired) {
       t.obs<-.hote_mean_paired(x1,x2, cov$s)$t.obs
-      pval <- 1 - pf(t.obs$t.obs, ncol(x), nrow(x1) - ncol(x))
+      pval <- 1 - pf(t.obs, ncol(x), nrow(x1) - ncol(x))
     } else {
       t.obs<- .hote_mean(x1,x2, cov$s)$t.obs
-      pval <- 1 - pf(t.obs$t.obs, ncol(x), nrow(x1) + nrow(x2) - ncol(x) - 1)
+      pval <- 1 - pf(t.obs, ncol(x), nrow(x1) + nrow(x2) - ncol(x) - 1)
     }
   } else {
     if (paired) {
@@ -85,7 +85,7 @@
         .hote_mean(x1perm, x2perm, cov$s )$t.obs  
       }, numeric(1))
     }
-    pval <- sum(stat.perm >= t.obs, na.rm=TRUE)/nperm
+    pval <- sum(abs(stat.perm) >= abs(t.obs), na.rm=TRUE)/nperm
   }
   out<-list(pval = pval, t.obs = t.obs)
 }

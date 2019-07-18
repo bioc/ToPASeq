@@ -18,7 +18,7 @@
 #' @param both.directions,maxNodes,minEdges,commonTh,filterSPIA,convertTo,convertBy Arguments for the \code{preparePathways()}
 #'
 #' @return A list:
-#' \item{res}{A list. First slot is a data frame containing p-values and q-values of mean and variance tests on pathways. The second slot is a list containing data.frames of the most affected paths in each pathway. The columns of the data frames contain: 1 - Index of the starting clique 2 - Index of the ending clique 3 - Index of the clique where the maximum value is reached 4 - length of the path 5 - maximum score of the path 6 - average score along the path 7 - percentage of path activation 8 - impact of the path on the entire pathway 9 - clique involved and significant 10 - clique forming the path 11 - genes forming the significant cliques 12 - genes forming the path}
+#' \item{res}{A list. First slot is a data frame containing p-values, test statistic, covariance type and q-values of mean or variance tests on pathways. }
 #' \item{topo.sig}{if \code{testCliques=TRUE}, a list where each slot contains the pvalues and a list of cliques in one pathway. \code{NULL} otherwise}
 #' \item{degtest}{A data.frame of gene-level differential expression statistics}
 #'
@@ -50,7 +50,7 @@ clipper<-function(x, group, pathways, type,which="proteins", edgeType=NULL, prep
   if (is.null(test.method)) test.method<-"voomlimma"
   if (type=="RNASeq") deg.table<-.testRNAseq(x, group, test.method)
 
-  out<-list(res=res$results[1:2], topo.sig=res$results[[3]], degtable=deg.table)
+  out<-list(res=res$results[1:2], topo.sig=res[[2]], degtable=deg.table)
   class(out)<-c(class(out), "topResultC","topResult")
   return(out)
 }
@@ -86,14 +86,14 @@ message("Testing cliques\n")
 
   }
 if (length(out[[1]])>0) {
-res<-data.frame(t(sapply(out[[1]],function(x) x[[1]])))
+res<-data.frame(t(sapply(out[[1]],function(x) x)))
 res$q.value<-p.adjust(res$pval,"fdr")
 
-paths<-lapply(out[[1]],function(x) x[[2]])
+#paths<-lapply(out[[1]],function(x) x[[2]])
 
-out[[1]]<-list(results=res, paths=paths, cliq.test)
+out[[1]]<-list(results=list(results=res, errors=out[[2]]), cliq.test=cliq.test)
 } else
-out[[1]]<-list(results=out[1:2], paths=list(), cliq.test)
+out[[1]]<-list(results=out[1:2], cliq.test)
 return(out)
 }
 
