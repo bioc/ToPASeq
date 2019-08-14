@@ -169,7 +169,7 @@ return(out)
 }
 
 .SPIAweights<-function(de, all, M){
-
+  rownames(M)<-colnames(M)<-sapply(rownames(M), function(x) substr(x, regexpr(":",x)+1, nchar(x)))
 diag(M) <- diag(M) - 1
 X <- de[rownames(M)]
 noMy <- sum(!is.na(X))
@@ -195,7 +195,7 @@ return(out[[1]])
 
 
  ph <- pb <- tA <-  NULL
-
+ rownames(M)<-colnames(M)<-sapply(rownames(M), function(x) substr(x, regexpr(":",x)+1, nchar(x)))
 diag(M) <- diag(M) - 1
 X <- de[rownames(M)]
 noMy <- sum(!is.na(X))

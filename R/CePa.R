@@ -66,33 +66,80 @@ CePa<-function(x, group, pathways, type,which="proteins", edgeType=NULL, prepare
 }
 ## CePa finalna moja implementacia
 # centrality, g=graphNEL
-.indegree<-function(px){
-  return(graph::degree(px)$inDegree)
-}
 
-.outdegree<-function(px){
-  return(graph::degree(px)$outDegree)
-}
-
-.inreach<-function(px){
-  sp<-RBGL::floyd.warshall.all.pairs.sp(px)
-  sp[is.infinite(sp)]<-NA
-  out<-apply(sp, 2, max, na.rm=TRUE) #inreach
-  return(out)
-}
-
-.outreach<-function(px){
-  sp<-RBGL::floyd.warshall.all.pairs.sp(px)
-  sp[is.infinite(sp)]<-NA
-  out<-apply(sp, 1, max, na.rm=TRUE) #outreach
-  return(out)
-}
-
-.between<-function(px){
-  return(betweenness(as(px,"matrix"), nodes(px)))
-}
 
 .CePaWeights<-function(x, method){
+  .indegree<-function(px){
+    return(graph::degree(px)$inDegree)
+  }
+  
+  .outdegree<-function(px){
+    return(graph::degree(px)$outDegree)
+  }
+  
+  .inreach<-function(px){
+    sp<-RBGL::floyd.warshall.all.pairs.sp(px)
+    sp[is.infinite(sp)]<-NA
+    out<-apply(sp, 2, max, na.rm=TRUE) #inreach
+    return(out)
+  }
+  
+  .outreach<-function(px){
+    sp<-RBGL::floyd.warshall.all.pairs.sp(px)
+    sp[is.infinite(sp)]<-NA
+    out<-apply(sp, 1, max, na.rm=TRUE) #outreach
+    return(out)
+  }
+  
+  #.between<-function(px){
+  #  return(betweenness(as(px,"matrix"), nodes(px)))
+  #}
+  
+  #Brandes algorithm
+  # graph is adjacency matrix
+  betweennesR<-function(graph){
+    nds<-rownames(graph)
+    
+    n<-length(nds)
+    CB<-setNames(rep(0, n),nds)
+    for (s in nds) {
+      S<-c()
+      P<-lapply(nds, function(x) character())
+      names(P)<-nds
+      
+      sigma<-setNames(rep(0, n), nds)
+      sigma[s]<-1
+      d<-setNames(rep(-1, n), nds)
+      d[s]<-0
+      Q<-s
+      while(length(Q)>0) {
+        v<-Q[1]
+        Q<-Q[-1]
+        S<-c(v,S)
+        for (w in names(which(graph[v,]==1))) {
+          if (d[w]<0) {
+            Q<-c(Q,w)
+            d[w]<-d[v]+1
+          } 
+          if (d[w]==d[v]+1) {
+            sigma[w]<-sigma[w]+sigma[v]
+            P[[w]]<-c(P[[w]], v)
+          }
+        }
+      }
+      delta<-setNames(rep(0, n),nds)
+      while (length(S)>0) {
+        w<-S[length(s)]
+        S<-S[-length(s)]
+        for (v in unique(P[[w]])) delta[v]<- delta[v]+sigma[v]/sigma[w]*(1+delta[w])
+        if (w!=s) CB[w]<-CB[w]+delta[w]
+      }
+      
+    }
+    
+    return(CB)
+  }
+  
   out<-list()
   length(out)<-length(method)
   names(out)<-method
@@ -109,7 +156,7 @@ CePa<-function(x, group, pathways, type,which="proteins", edgeType=NULL, prepare
     out[["degree"]]<-graph::degree(x, nodes(x))
   }
   if (any(method == "betweenness")) {
-    out[["betweenness"]]<-.between(x)
+    out[["betweenness"]]<-betweennesR(as(x,"matrix"))
   }
   if (any(method == "in.reach")) {
     out[["in.reach"]]<-.inreach(x)
