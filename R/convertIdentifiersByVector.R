@@ -13,9 +13,10 @@
 #' @keywords manip
 #' @examples
 #' g<-pathways("hsapiens","kegg")
-#' g<-g[["Tight junction"]]
-#' conv<-data.frame(orig=nodes(g,"mixed"), new=LETTERS[1:4],newtype=rep("LETTERS",4))
-#' gc<-convertIdentifiersByVector(g, conv.table = conv[1:2,])@protEdges
+#' ng<-sapply(g, function(x) length(nodes(x,"mixed)))
+#' g<-g[[which.min(ng)]]
+#' conv<-data.frame(orig=nodes(g,"mixed"), new=LETTERS[seq_len(min(ng))],newtype=rep("LETTERS",min(ng)))
+#' gc<-convertIdentifiersByVector(g, conv.table = conv)@protEdges
 #'
 #' @export
 
