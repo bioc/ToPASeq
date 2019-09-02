@@ -22,7 +22,7 @@ This function converts identifiers of nodes in a pathway. It uses the user speci
 }
 \examples{
 g<-pathways("hsapiens","kegg")
-ng<-sapply(g, function(x) length(nodes(x,"mixed)))
+ng<-sapply(g, function(x) length(nodes(x,"mixed")))
 g<-g[[which.min(ng)]]
 conv<-data.frame(orig=nodes(g,"mixed"), new=LETTERS[seq_len(min(ng))],newtype=rep("LETTERS",min(ng)))
 gc<-convertIdentifiersByVector(g, conv.table = conv)@protEdges
