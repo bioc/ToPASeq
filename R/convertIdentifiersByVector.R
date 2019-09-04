@@ -13,7 +13,7 @@
 #' @keywords manip
 #' @examples
 #' g<-pathways("hsapiens","kegg")
-#' ng<-sapply(g, function(x) length(nodes(x,"mixed)))
+#' ng<-sapply(g, function(x) length(nodes(x,"mixed")))
 #' g<-g[[which.min(ng)]]
 #' conv<-data.frame(orig=nodes(g,"mixed"), new=LETTERS[seq_len(min(ng))],newtype=rep("LETTERS",min(ng)))
 #' gc<-convertIdentifiersByVector(g, conv.table = conv)@protEdges
@@ -35,7 +35,7 @@ convertIdentifiersByVector<-function (pathway, conv.table)
     missT <- sapply(miss, function(x) strsplit(x,":")[[1]][2:1])
 
     conv.table<-as.matrix(conv.table)
-    conv.table<-rbind(conv.table, cbind(miss,t(missT)))
+    if (length(miss)>0) conv.table<-rbind(conv.table, cbind(miss,t(missT)))
 
     conv.table<-cbind(conv.table, t(sapply(as.character(conv.table[,1]), function(x) strsplit(x,":")[[1]])))
     rownames(conv.table)<-conv.table[,5]
