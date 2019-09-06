@@ -2,15 +2,35 @@
 % Please edit documentation in R/auxiliary.R
 \name{res}
 \alias{res}
+\alias{topo.sig}
+\alias{degtable}
+\alias{res.topResult}
+\alias{topo.sig.topResult}
+\alias{degtable.topResult}
 \title{Functions to extract and display results}
 \usage{
 res(object)
+
+\method{res}{topResult}(object)
+
+\method{topo.sig}{topResult}(object)
+
+\method{degtable}{topResult}(object)
 }
 \arguments{
-\item{object, x}{an output from one of following function \code{"SPIA","PRS", "CePA", "PWEA", "TAPPA", "TopologyGSA","DEGraph", "clipper" }}
+\item{object}{an output from one of following function \code{"SPIA","PRS", "CePA", "PWEA", "TAPPA", "TopologyGSA","DEGraph", "clipper" }}
 
 \item{...}{other arguments}
 }
 \description{
 Functions to extract and display results
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{topResult}: Extracts results of topology-based pathway analysis
+
+\item \code{topResult}: Extracts topological significance of genes
+
+\item \code{topResult}: Extracts results of differential expression analysis on genes
+}}
+

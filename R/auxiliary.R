@@ -1,36 +1,37 @@
 #' Functions to extract and display results
 #'
 #' Functions to extract and display results
-#' @aliases res
-#' @aliases topo.sig
-#' @aliases degtable
-#'
-#' 
-#' @param object,x an output from one of following function \code{"SPIA","PRS", "CePA", "PWEA", "TAPPA", "TopologyGSA","DEGraph", "clipper" }
+#' @aliases topo.sig degtable res
+#' @param object an output from one of following function \code{"SPIA","PRS", "CePA", "PWEA", "TAPPA", "TopologyGSA","DEGraph", "clipper" }
 #' @param ... other arguments
 #' 
 #' @export
 res<-function(object){
   UseMethod("res")
 }
+
 #' @export
 topo.sig<-function(object){
   UseMethod("topo.sig")
 }
+
 #' @export
 degtable<-function(object){
   UseMethod("degtable")
 }
 
-
+#' @describeIn res Extracts results of topology-based pathway analysis
 #' @export
 res.topResult<-function(object){
   return(object$res)
 }
+
+#' @describeIn res Extracts topological significance of genes
 #' @export
 topo.sig.topResult<-function(object){
   return(object$topo.sig)
 }
+#' @describeIn res Extracts results of differential expression analysis on genes
 #' @export
 degtable.topResult<-function(object){
   return(object$degtable)
