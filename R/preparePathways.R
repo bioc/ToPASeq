@@ -24,7 +24,9 @@
     if (!is.null(maxNodes)) pwys <- .bigPaths(pwys, maxNodes)
     if (!is.null(minEdges)) pwys <- .fewEdges(pwys, minEdges)
     if (!is.null(commonTh)) pwys <- .commonGenes(pwys, which, genes, commonTh)
-
+    
+    if (is.null(EdgeAttrs)) EdgeAttrs<-edgeAttrs
+    
     pwys <- lapply(pwys, function(p)
       list(.transformPathway(p, method=method, which=which, edgeType=edgeType,
                              both.directions, EdgeAttrs=EdgeAttrs), p@title))
@@ -164,73 +166,6 @@
     perms<-replicate(nperm, sample(group))
   }
   return(perms)
-}
-
-.buildGraphNEL<-function (edges, sym, edge.types)
-{
-  if (!is.null(edge.types))
-    edges <- .selectEdges(edges, edge.types)
-  if (nrow(edges) == 0)
-    g <- new("graphNEL", character(), list(), "directed")
-  else {
-    prep <- .prepareEdges(edges, sym)
-    nodes <- union(unique(prep$src), unique(prep$dest))
-    g <- new("graphNEL", nodes, .edLi(nodes, prep), "directed")
-    graph::edgeDataDefaults(g, "edgeType") <- "undefined"
-    graph::edgeData(g, prep$src, prep$dest, "edgeType") <- prep$type
-  }
-  return(g)
-}
-
-
-.selectEdges<-function (m, types)
-{
-  missing <- setdiff(types, edgeAttrs[[1]][,1])
-  if (length(missing) > 0) {
-    stop("the following edge types are missing: ", paste(sort(missing),
-                                                         collapse = ", "))
-  }
-  m[m$type %in% types, , drop = FALSE]
-}
-
-.prepareEdges<-function (e, sym)
-{
-  e[] <- lapply(e, as.character)
-  if (sym) {
-    e <- .symmetric(e)
-  }
-  ends <- .endpoints(e)
-  types <- tapply(e$type, ends, function(group) {
-    paste(sort(unique(group)), collapse = ";")
-  })
-  binder <- function(...) rbind.data.frame(..., stringsAsFactors = FALSE)
-  merged <- do.call(binder, strsplit(names(types), "|", fixed = TRUE))
-  colnames(merged) <- c("src", "dest")
-  cbind(merged, data.frame(type = as.character(types), stringsAsFactors = FALSE))
-}
-
-.symmetric<-function (e)
-{
-  mask <- e$direction == "undirected" & (e$src_type != e$dest_type | e$src != e$dest)
-  dird <- e[!mask, ]
-  undir <- e[mask, ]
-  revdir <- e[mask, ]
-  revdir$src_type <- undir$dest_type
-  revdir$src <- undir$dest
-  revdir$dest_type <- undir$src_type
-  revdir$dest <- undir$src
-  rbind(dird, undir, revdir)
-}
-
-.endpoints<-function (e)
-{
-  paste( e$src,
-         e$dest, sep = "|")
-}
-
-.edLi <- function(n, e) {
-  sapply(n, function(n) list(edges = e[e[, 1] == n, 2]),
-         simplify=FALSE, USE.NAMES = TRUE)
 }
 
 .fewEdges <- function(pwys, minEdges)
