@@ -53,11 +53,11 @@
             out<-.processMA(x, group)
             out<-.testMA(out[[1]], out[[2]])
             out<-.applyTh(out, p.th, logFC.th)
-            if (length(out[[1]])==0) stop("Found NO differetially expressed genes") else message(paste("Found", length(out[[1]]), "differentially expressed genes"))
+            if (length(out[[1]])==0) stop("Found NO differentially expressed genes") else message(paste("Found", length(out[[1]]), "differentially expressed genes"))
           } else
             if (type=="DEtable") {
               out<-.applyTh(x, p.th, logFC.th)
-              if (length(out[[1]])==0) stop("Found NO differetially expressed genes") else message(paste("Found", length(out[[1]]), "differentially expressed genes"))
+              if (length(out[[1]])==0) stop("Found NO differentially expressed genes") else message(paste("Found", length(out[[1]]), "differentially expressed genes"))
             } else
               if (type=="DElist") {
                 if (length(x)!=2) stop("The input data must be a list of length two (named statistics of differentially expressed genes and names of all genes)")

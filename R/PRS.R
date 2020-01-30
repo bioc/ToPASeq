@@ -81,7 +81,8 @@ prsWeights <- function(pwy, de, all)
     g <- intersect(all, rownames(pwy))
     glen <- length(g)
 
-    if(!glen) stop(paste("Gene names in a pathway and in data don't match"))
+    if(!glen) stop(paste("Gene names in a pathway and in data don't match. \n Data contain:", 
+                         paste(head(all), collapse = " "), ", but pathway has ", paste(rownames(pwy), collapse=" ")))
     set <- pwy[g, g]
     
     wei <- setNames(rep(0, glen), g)
