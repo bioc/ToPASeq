@@ -78,6 +78,8 @@ prsWeights <- function(pwy, de, all)
     if(is(pwy, "Pathway")) 
         pwy <- .preparePathways(list(pwy), method="PRS", genes=all)[[1]][[1]]
 
+    rownames(pwy)<-colnames(pwy)<- vapply(colnames(pwy), .spl2, character(1), USE.NAMES=FALSE)
+      
     g <- intersect(all, rownames(pwy))
     glen <- length(g)
 
