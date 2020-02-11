@@ -128,7 +128,7 @@ TopologyGSA represents a multivariable method in which the expression of genes i
 The method can be used with a single command 
  
 ```{r TopologyGSA}
-top<-TopologyGSA(assay(airSE), group, pwys, type="RNASeq", nperm=10)
+top<-TopologyGSA(assay(airSE), group, pwys, type="RNASeq", nperm=10, norm.method="edgeR")
 res(top)
 ```
 
@@ -140,7 +140,7 @@ Another multivariable method implemented in the package is `r Biocpkg("DEGraph")
 We apply the method with 
 
 ```{r DEGraph}
-deg<-DEGraph(assay(airSE), group, pwys, type="RNASeq")
+deg<-DEGraph(assay(airSE), group, pwys, type="RNASeq", norm.method="edgeR")
 res(deg)
 ```
 
@@ -152,7 +152,7 @@ The last multivariable method available within this package is called clipper. T
 The method can be applied with 
 
 ```{r clipper}
-cli<-clipper(assay(airSE), group, pwys,type="RNASeq", method="mean", nperm=10)
+cli<-clipper(assay(airSE), group, pwys,type="RNASeq", method="mean", nperm=10, norm.method="edgeR")
 res(cli)$results[[1]]
 ```
 
@@ -165,7 +165,7 @@ The function returns two types of the results on pathway-level. The first (print
 The most well-known topology-based pathway analysis method is SPIA. In there, two evidences of differential expression of a pathway are combined. The first evidence is a regular so called overrepresentation analysis in which the statistical significance of the number of differentially expressed genes belonging to a pathway is assessed. The second evidence reflects the pathway topology and it is called the pertubation factor. The authors assume that a differentially expressed gene at the begining of a pathway topology (e.g. a receptor in a signaling pathway) has a stronger effect on the functionality of a pathway than a differentially expressed gene at the end of a pathway (e.g. a transcription factor in a signaling pathway). The pertubation factors of all genes are calculated from a system of linear equations and then combined within a pathway. The two evidences in a form of p-values are finally combined into a global p-value, which is used to rank the pathways.
 
 ```{r SPIA}
-spi<-SPIA(assay(airSE), group,pwys , type="RNASeq", logFC.th=-1)
+spi<-SPIA(assay(airSE), group,pwys , type="RNASeq", logFC.th=-1, test.method="edgeR")
 res(spi)
 ```
 
@@ -181,7 +181,7 @@ Apart from the expected arguments: a gene expression data matrix, a vector of cl
 TAPPA was among the first topology-based pathway analysis methods. It was inspired in chemointformatics and their models for predicting the structure of molecules. In TAPPA, the gene expression values are standardized and sigma-transformed within a samples. Then, a pathway is seen a molecule, individual genes as atoms and the energy of a molecule is a score defined for one sample. This score is called Pathway Connectivity Index. The difference of expression is assessed via a common univariable two sample test - Mann-Whitney in our implemetation. 
 
 ```{r TAPPA}
-tap<-TAPPA(assay(airSE), group, pwys, type="RNASeq")
+tap<-TAPPA(assay(airSE), group, pwys, type="RNASeq", norm.method = "edgeR")
 res(tap)
 ```
 
@@ -191,7 +191,7 @@ Apart from the expected arguments: a gene expression data matrix, a vector of cl
 PRS is another method that works with gene-level statistics and a list of differentially expresed genes. The pathway topology is incorporated as the number of downstream differentially expressed genes. The gene-level log fold-changes are weigted by this number and sumed up into a pathway-level score. A statistical significance is assessed by a permutations of genes.  
 
 ```{r PRS}
-Prs<-PRS_wrapper( assay(airSE), group, pwys, type="RNASeq",  logFC.th=-1, nperm=10)
+Prs<-PRS_wrapper( assay(airSE), group, pwys, type="RNASeq",  logFC.th=-1, nperm=10, test.method="edgeR")
 res(Prs)
 ```
 
@@ -207,7 +207,7 @@ The others arguments are optional. Arguments `convertTo` and `convertBy` control
 The last method available in this package is called PathWay Enrichment Analysis (PWEA). This is actually a weigthed form of common Gene Set Enrichment Analysis (GSEA). The weights are called Topological Influence Factor (TIF) and are defined as a geometic mean of ratios of Pearson's correlation coefficient and the distance of two genes in a pathway. The weights of genes outside a pathway are assigned randomly from normal distribution with parameters estimated from the weights of genes in all pathways. A statistical significance of a pathway is assessed via Kolmogorov-Simirnov-like test statistic comparing two cumulative distribution functions with class label permutations. 
 
 ```{r PWEA}
-pwe<-PWEA(assay(airSE), group, pwys,  type="RNASeq", nperm=10)
+pwe<-PWEA(assay(airSE), group, pwys,  type="RNASeq", nperm=10, test.method="edgeR")
 res(pwe)
 ```
 
