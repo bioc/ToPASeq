@@ -97,7 +97,7 @@ out<-.catchErr(pathways, function(p) {
 testOneGraph(p[[1]], exprs, group, useInteractionSigns = FALSE)
 })
 
-if (length(out[[1]])==0) stop("No pathway was sucessfully tested")
+if (length(out[[1]])==0) stop(print(out), print(head(rownames(exprs))), print(pathways[[1]]), "No pathway was sucessfully tested")
 
 
 out[[1]]<-.processDEGraph(out[[1]], overall)
