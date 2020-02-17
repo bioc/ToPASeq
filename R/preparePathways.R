@@ -56,6 +56,8 @@
     pwy[pwy > 1] <- 1
     pwy[lower.tri(pwy)] <- 0
     diag(pwy) <- 1
+    rownames(pwy)<-gsub(".*:","",rownames(pwy))
+    colnames(pwy)<-gsub(".*:","",colnames(pwy))
   } else {
     if (method == "SPIA") {
       pwy<-.prepareSPIA2(pwy, which, both.directions, EdgeAttrs)
@@ -64,9 +66,11 @@
       if(method %in% c("PRS", "PWEA", "TopologyGSA","clipper","DEGraphNoSigns", "CePa", "DEGraph"))
       {
         x<-.buildGraphNEL(edges(pwy, which), both.directions, edgeType)
+        nodes(x)<-gsub(".*:","",nodes(x))
+        
         if(method == "PRS")
           x <- as(x, "matrix")
-        if(method == "DEGraph") {
+          if(method == "DEGraph") {
             eA<-merge(EdgeAttrs[[1]], EdgeAttrs[[2]], by.x=2, by.y=1, all=TRUE)
             pos<-as.character(eA[,2][!is.na(eA[,2]) & eA[,"beta"]==1])
             neg<-as.character(eA[,2][!is.na(eA[,2]) & eA[,"beta"]==-1])
@@ -98,6 +102,8 @@
 
   es <- graphite::edges(p,which)
   ns <- graphite::nodes(p)
+  ns <- gsub(".*:","",ns)
+  
   spiaEdges<-EdgeAttrs[[1]]
   if (!all(unique(as.character(es[,6])) %in% spiaEdges[,1] )) stop("Unexpected edge type ", levels(es[,4])[!levels(es[,4]) %in% spiaEdges[,1]], " Please modify edgeAttrs")
 
@@ -106,9 +112,11 @@
               function(edgeType) {
                 est <- es[es[, "spiaType"] == edgeType, , drop = FALSE]
                 gnl <- .buildGraphNEL(est, both.directions, NULL)
-                gnl <- graph::addNode(setdiff(graphite::nodes(p),graph::nodes(gnl)), gnl, list())
+                nodes(gnl)<-gsub(".*:","",nodes(gnl))
+                
+                gnl <- graph::addNode(setdiff(ns,graph::nodes(gnl)), gnl, list())
                 gnl <- t(as(gnl, "matrix"))
-                return(gnl[graphite::nodes(p),graphite::nodes(p)])
+                return(gnl[ns,ns])
               })
   l$title <- p@title
   l$nodes <- ns
