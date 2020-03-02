@@ -17,7 +17,7 @@ rbind(NodeTable,r)
 
 edgetypeslegend<-function( lcex){
 par(mai=c(1.02,0,0,0))
-plot(1, ylim=c(0,7), xlim=c(1,5), type="n", xlab="", ylab="", frame=FALSE, axes=FALSE)
+plot(1, ylim=c(-0.5,7), xlim=c(1,5), type="n", xlab="", ylab="", frame=FALSE, axes=FALSE)
 
 
 text( 0.8, 6.5, "Edge types", pos=4, font=2, cex=lcex)
@@ -48,8 +48,12 @@ text( 1.5, 2, "+u", cex=lcex)
 text( 2.2, 2, "ubiquination", pos=4, cex=lcex)
 
 text(0.8, 1, "Edge colors", pos=4, font=2, cex=lcex)
-
-legend(x="bottom", legend=c("consistent", "inconstistent", "indecisive"), fill=c("black","red","grey87"), bty="n")
+polygon(c(1,1,2,2), c(0.4,0.6, 0.6, 0.4), col="black")
+text( 2.2, 0.5, "consistent", pos=4, cex=lcex)
+polygon(c(1,1,2,2), c(-0.1,0.1, 0.1, -0.1), col="red")
+text( 2.2, 0, "inconsistent", pos=4, cex=lcex)
+polygon(c(1,1,2,2), c(-0.4,-0.6,-0.6,-0.4), col="grey87")
+text( 2.2, -0.5, "indecisive", pos=4, cex=lcex)
 }
 
 makeBreaks<-function(x, l, sym=TRUE){
@@ -344,13 +348,11 @@ renderGraph(leg.xx, drawEdges=drawNoEdges<-function(g){} ,graph.pars=list(graph=
 makeLegend<-function(bbox, categories, nodesize, fontsize, nscex,  col.lim, br, sigpal, name, cex.legend){
 makeNodeSizeLegend(bbox, categories, nodesize, fontsize, nscex)
 
+par(mar=c(5,5,5,5))  
 ext<-max(abs(col.lim))
-
-fields::image.plot(add=TRUE, legend.only=TRUE, 
- zlim=c(-ext, ext),
- col=sigpal(br), legend.shrink=0.3,
- smallplot= c(.45,.55,0.6,0.9),
- legend.width=0.8, legend.lab=name, legend.mar=3.3, legend.line=3)
+image(t(matrix(seq_len(length(sigpal(br))))), col=sigpal(br),xaxt="n", yaxt="n", xlab="", ylab="")
+axis(at=seq(0,1,0.25), labels=seq(from=-ext, to=ext, length.out = 5), 4, las=2)
+mtext(name, side=4, line = 2.5)
 
 edgetypeslegend( lcex=cex.legend)
 #ToPASeq:::edgetypeslegend(1)
@@ -382,7 +384,7 @@ return(paste(main, sig, sep="\n"))
 drawGraph<-function(xxred, res, which, NodeTable, nodesize, fontsize, statName,  cexmain=1, col.lim=NULL, breaks, sigpal, legend=TRUE, cexlegend){
 
 
-if (legend) layout(matrix(c(1,1,1,1,2,3), nrow=1)) 
+if (legend) layout(matrix(c(rep(1,8),2,3, rep(4,2)), nrow=2)) 
 
 renderGraph(xxred, graph.pars=list(graph=list(main=headline(res,which,FALSE), cex.main=cexmain)),  drawNodes=drawNodesPies2,drawEdges=renderEdgesTypes2)
 

@@ -72,4 +72,11 @@ importFrom(utils,head)
 importMethodsFrom(Biobase,exprs)
 importMethodsFrom(Biobase,fData)
 importMethodsFrom(Biobase,pData)
+
+importFrom(grDevices, colorRampPalette)
+importFrom(graphics, arrows, layout, lines, plot.new,
+           plot.window, polygon, strheight, strwidth,
+           symbols, title)
+importFrom(utils, combn, tail)
+
 useDynLib(ToPASeq)
