@@ -1,5 +1,5 @@
 Package: ToPASeq
-Version: 1.25.0
+Version: 1.25.1
 Date: 2019-03-19
 Title: Topology-based pathway analysis of RNA-seq data
 Author: Ivana Ihnatova, Eva Budinska, Ludwig Geistlinger
@@ -38,3 +38,4 @@ biocViews: ImmunoOncology,
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
 Encoding: UTF-8
+PackageStatus: Deprecated
